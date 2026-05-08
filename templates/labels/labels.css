@@ -153,9 +153,17 @@ html, body {
 }
 
 /* Description — Garamond Italic 13pt. Margin-top adds ½ line of breathing
-   space below the title (= 14pt × 1.302 / 2 ≈ 3.2mm), per customer feedback. */
+   space below the title (= 14pt × 1.302 / 2 ≈ 3.2mm), per customer feedback.
+
+   max-width 60mm: empirically tuned. Source PDF visible width is ~35mm
+   (cell 1 measurements), but EB Garamond italic 13pt averages ~6pt/char
+   so a typical 27-char line ("bolo de farinha de amêndoa,") needs ~57mm.
+   60mm fits all sample 1-line descriptions without forced wrap, still
+   narrower than the title's 70mm to preserve visual hierarchy, and forces
+   long descriptions to break at the natural comma. */
 .description {
-  margin: 3.2mm 0 0 0;
+  margin: 3.2mm auto 0;
+  max-width: 60mm;
   font-family: var(--font-body);
   font-style: italic;
   font-size: 13pt;
