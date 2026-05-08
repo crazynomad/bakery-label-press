@@ -40,10 +40,14 @@ TEMPLATE_DIR = ROOT / "templates" / "labels"
 DEFAULT_SOURCE = ROOT / "data" / "labels-sample.csv"
 DEFAULT_OUT_DIR = ROOT / "dist"
 
-# Order matters — this is the order allergen icons render in the foot row.
-# Matches the original Plano etiquetas PDF: gluten, milk, egg, peanut, nuts.
-# (The PDF has 5 unique allergen icons in this order; soy is not represented.)
-ALLERGEN_COLS = ["gluten", "milk", "egg", "peanut", "nuts"]
+# Order matters — this is the order allergen icons render in the foot row,
+# and must match the column order on the Sheet's real_data tab.
+# 5 allergens: gluten, milk, egg, peanut, soy. (The codebase originally
+# mislabelled the 5th source-PDF icon as "nuts" — it actually depicts
+# soybeans; we corrected the slug to "soy". A separate nuts column was
+# briefly added then dropped per bakery feedback as redundant overlap
+# with peanut/soy.)
+ALLERGEN_COLS = ["gluten", "milk", "egg", "peanut", "soy"]
 
 LABELS_PER_SHEET = 8  # 2 columns × 4 rows
 

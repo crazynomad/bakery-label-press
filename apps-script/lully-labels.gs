@@ -27,7 +27,8 @@ const TAB = {
 
 // Header slugs — must match what scripts/build-labels.py reads.
 // Order in this array = on-sheet column order = on-label icon order for allergens.
-// 5 allergens (gluten/milk/egg/peanut/nuts) match the source PDF exactly.
+// 5 allergens (gluten/milk/egg/peanut/soy). The 5th source-PDF icon depicts
+// soybeans (originally mislabelled "nuts" in this repo); slug corrected.
 const COLUMNS = [
   {key:'name_fr',        kind:'text',     width:220, note:'Nome do produto em francês — será impresso em maiúsculas. Use Alt+Enter para forçar quebra de linha no título.'},
   {key:'description_pt', kind:'text',     width:280, note:'Descrição curta em português — em itálico'},
@@ -35,7 +36,7 @@ const COLUMNS = [
   {key:'milk',           kind:'checkbox', width: 70, note:'Contém leite?'},
   {key:'egg',            kind:'checkbox', width: 70, note:'Contém ovos?'},
   {key:'peanut',         kind:'checkbox', width: 70, note:'Contém amendoim?'},
-  {key:'nuts',           kind:'checkbox', width: 70, note:'Contém frutos secos?'},
+  {key:'soy',            kind:'checkbox', width: 70, note:'Contém soja?'},
   {key:'price',          kind:'number',   width: 90, note:'Use ponto como separador decimal — ex: 4.20'},
   {key:'active',         kind:'checkbox', width: 70, note:'Marque ✓ para incluir no próximo PDF'}
 ];
@@ -46,7 +47,7 @@ const COLUMNS = [
 // staff insert these in their own data with Alt+Enter inside a Sheet cell.
 // Allergen flags reflect what's actually shown in each label of the source.
 const SAMPLE_ROWS = [
-  // [name_fr, description_pt, gluten, milk, egg, peanut, nuts, price, active]
+  // [name_fr, description_pt, gluten, milk, egg, peanut, soy, price, active]
   // row 1
   ['GATEAU BASQUE\nÀ LA PART','tarte de massa sablé,\ncreme de amêndoa, rum',  true, true, true, false, false, 4.20, true],
   ['CAKE AU CITRON',          'bolo de citrinos',                              true, true, true, false, false, 3.50, true],
@@ -57,7 +58,7 @@ const SAMPLE_ROWS = [
   ['CANNELÉ\nBORDELAIS',      'cannele caramelizado,\nbaunilha e rum',         true, true, true, false, false, 2.50, true],
   ['COOKIE\nAU CHOCOLAT',     'cookie de chocolate negro',                     true, true, true, true,  true,  3.20, true],
   // row 4
-  ['FINANCIER',               'bolo de farinha de amêndoa,\nmanteiga caramelizada', true, true, true, false, true, 2.80, true],
+  ['FINANCIER',               'bolo de farinha de amêndoa,\nmanteiga caramelizada', true, true, true, false, false, 2.80, true],
   ['GATEAU BASQUE\nENTIER',   'tarte de massa sablé,\ncreme de amêndoa, rum',  true, true, true, false, false, 28.00, true]
 ];
 

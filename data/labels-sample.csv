@@ -1,4 +1,4 @@
-name_fr,description_pt,gluten,milk,egg,peanut,nuts,price,active
+name_fr,description_pt,gluten,milk,egg,peanut,soy,price,active
 "GATEAU BASQUE
 À LA PART","tarte de massa sablé,
 creme de amêndoa, rum",x,x,x,,,4.20,x
@@ -12,7 +12,7 @@ baunilha e rum",x,x,x,,,2.50,x
 "COOKIE
 AU CHOCOLAT",cookie de chocolate negro,x,x,x,x,x,3.20,x
 FINANCIER,"bolo de farinha de amêndoa,
-manteiga caramelizada",x,x,x,,x,2.80,x
+manteiga caramelizada",x,x,x,,,2.80,x
 "GATEAU BASQUE
 ENTIER","tarte de massa sablé,
 creme de amêndoa, rum",x,x,x,,,28.00,x
