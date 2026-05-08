@@ -11,6 +11,10 @@ __pycache__/
 # OAuth helper output (never commit)
 scripts/run-release-local.sh
 
+# Usage-guide exports — .md is the single source of truth, regenerate as needed
+docs/usage.*.pdf
+docs/usage.*.png
+
 # Editor / OS noise
 .DS_Store
 .idea/
