@@ -20,3 +20,10 @@ docs/usage.*.png
 .idea/
 .vscode/
 *.swp
+
+# Client-provided source PDFs + intermediate extraction artefacts. The
+# curated data/master-catalog.csv is the single source of truth the Sheet
+# ingests; re-run scripts/extract-pdf-labels.py against a local PDF copy
+# to regenerate.
+data/New Etiquetas both sides/
+data/extracted/
