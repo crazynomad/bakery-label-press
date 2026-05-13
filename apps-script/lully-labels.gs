@@ -29,9 +29,20 @@ const TAB = {
 // Order in this array = on-sheet column order = on-label icon order for allergens.
 // 5 allergens (gluten/milk/egg/peanut/soy). The 5th source-PDF icon depicts
 // soybeans (originally mislabelled "nuts" in this repo); slug corrected.
+//
+// NOTE on `category`: this column is sheet-only metadata for back-office
+// product filtering. build-labels.py uses csv.DictReader (reads by header
+// name) and references only name_fr/description_pt/<allergens>/price/active,
+// so adding `category` is safe — the renderer ignores it.
+const CATEGORY_OPTIONS = [
+  'Breads', 'Viennoiseries', 'Gateaux de voyage', 'Desserts',
+  'Snacks', 'Drinks', 'Dry Goods', 'Brunch'
+];
 const COLUMNS = [
   {key:'name_fr',        kind:'text',     width:220, note:'Nome do produto em francês — será impresso em maiúsculas. Use Alt+Enter para forçar quebra de linha no título.'},
   {key:'description_pt', kind:'text',     width:280, note:'Descrição curta em português — em itálico'},
+  {key:'category',       kind:'dropdown', width:150, options: CATEGORY_OPTIONS,
+                         note:'Categoria interna — não aparece no label. Apenas para filtros/gestão.'},
   {key:'gluten',         kind:'checkbox', width: 70, note:'Contém glúten?'},
   {key:'milk',           kind:'checkbox', width: 70, note:'Contém leite?'},
   {key:'egg',            kind:'checkbox', width: 70, note:'Contém ovos?'},
@@ -47,19 +58,19 @@ const COLUMNS = [
 // staff insert these in their own data with Alt+Enter inside a Sheet cell.
 // Allergen flags reflect what's actually shown in each label of the source.
 const SAMPLE_ROWS = [
-  // [name_fr, description_pt, gluten, milk, egg, peanut, soy, price, active]
+  // [name_fr, description_pt, category, gluten, milk, egg, peanut, soy, price, active]
   // row 1
-  ['GATEAU BASQUE\nÀ LA PART','tarte de massa sablé,\ncreme de amêndoa, rum',  true, true, true, false, false, 4.20, true],
-  ['CAKE AU CITRON',          'bolo de citrinos',                              true, true, true, false, false, 3.50, true],
+  ['GATEAU BASQUE\nÀ LA PART','tarte de massa sablé,\ncreme de amêndoa, rum',  'Gateaux de voyage', true, true, true, false, false, 4.20, true],
+  ['CAKE AU CITRON',          'bolo de citrinos',                              'Gateaux de voyage', true, true, true, false, false, 3.50, true],
   // row 2
-  ['CAKE\nAU CHOCOLAT',       'bolo de chocolate negro',                       true, true, true, true,  true,  4.00, true],
-  ['BROWNIE',                 'brownie de chocolate negro',                    true, true, true, true,  true,  3.50, true],
+  ['CAKE\nAU CHOCOLAT',       'bolo de chocolate negro',                       'Gateaux de voyage', true, true, true, true,  true,  4.00, true],
+  ['BROWNIE',                 'brownie de chocolate negro',                    'Gateaux de voyage', true, true, true, true,  true,  3.50, true],
   // row 3
-  ['CANNELÉ\nBORDELAIS',      'cannele caramelizado,\nbaunilha e rum',         true, true, true, false, false, 2.50, true],
-  ['COOKIE\nAU CHOCOLAT',     'cookie de chocolate negro',                     true, true, true, true,  true,  3.20, true],
+  ['CANNELÉ\nBORDELAIS',      'cannele caramelizado,\nbaunilha e rum',         'Gateaux de voyage', true, true, true, false, false, 2.50, true],
+  ['COOKIE\nAU CHOCOLAT',     'cookie de chocolate negro',                     'Gateaux de voyage', true, true, true, true,  true,  3.20, true],
   // row 4
-  ['FINANCIER',               'bolo de farinha de amêndoa,\nmanteiga caramelizada', true, true, true, false, false, 2.80, true],
-  ['GATEAU BASQUE\nENTIER',   'tarte de massa sablé,\ncreme de amêndoa, rum',  true, true, true, false, false, 28.00, true]
+  ['FINANCIER',               'bolo de farinha de amêndoa,\nmanteiga caramelizada', 'Gateaux de voyage', true, true, true, false, false, 2.80, true],
+  ['GATEAU BASQUE\nENTIER',   'tarte de massa sablé,\ncreme de amêndoa, rum',  'Gateaux de voyage', true, true, true, false, false, 28.00, true]
 ];
 
 const HISTORY_HEADERS = [
@@ -164,6 +175,13 @@ function _applyValidations(sh, dataRows) {
       range.setDataValidation(SpreadsheetApp.newDataValidation().requireCheckbox().build());
     } else if (col.kind === 'number') {
       range.setNumberFormat('0.00');
+    } else if (col.kind === 'dropdown' && col.options) {
+      range.setDataValidation(
+        SpreadsheetApp.newDataValidation()
+          .requireValueInList(col.options, true)
+          .setAllowInvalid(false)
+          .build()
+      );
     }
     // name_fr can contain forced line breaks (Alt+Enter); WRAP keeps the
     // cell visually showing them. Description is also long, wrap helps too.
