@@ -7,16 +7,22 @@ Steps:
   4. Upload the PDF and a CSV snapshot to the Drive folder.
   5. Append a result row to the release_history tab in the same Sheet.
 
-On failure: still appends a row to release_history with status=failed, so the
-client can see what happened from inside the Sheet without opening GitHub.
+With --dry-run: steps 1-3 only — pulls live data and renders locally without
+touching Drive or release_history. Useful for testing layout changes against
+production data from a laptop.
+
+On failure (non-dry-run): still appends a row to release_history with
+status=failed, so the client can see what happened from inside the Sheet
+without opening GitHub.
 
 Required env vars (all set by .github/workflows/build-labels.yml):
   REQUEST_ID, SHEET_ID, TAB, REQUESTED_BY
   GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN
-  LULLY_DRIVE_FOLDER_ID
+  LULLY_DRIVE_FOLDER_ID  (not required with --dry-run)
 """
 from __future__ import annotations
 
+import argparse
 import csv
 import datetime as dt
 import io
@@ -38,6 +44,8 @@ REQUIRED_ENV = (
     "GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET",
     "GOOGLE_OAUTH_REFRESH_TOKEN", "LULLY_DRIVE_FOLDER_ID",
 )
+# --dry-run skips Drive upload, so the folder ID isn't needed.
+REQUIRED_ENV_DRY_RUN = tuple(v for v in REQUIRED_ENV if v != "LULLY_DRIVE_FOLDER_ID")
 
 # ----- helpers -----
 
@@ -131,13 +139,20 @@ def _count_active(csv_text: str) -> int:
 # ----- main -----
 
 def main() -> int:
-    for v in REQUIRED_ENV:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Pull live Sheet and render dist/labels.pdf locally; "
+                             "skip Drive upload and release_history write.")
+    args = parser.parse_args()
+
+    required = REQUIRED_ENV_DRY_RUN if args.dry_run else REQUIRED_ENV
+    for v in required:
         _env(v)
     sheet_id     = os.environ["SHEET_ID"]
     tab          = os.environ["TAB"]
     request_id   = os.environ["REQUEST_ID"]
     requested_by = os.environ["REQUESTED_BY"]
-    folder_id    = os.environ["LULLY_DRIVE_FOLDER_ID"]
 
     started_at = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     token = _refresh_access_token()
@@ -158,6 +173,12 @@ def main() -> int:
         if not pdf_path.exists():
             raise RuntimeError("build-labels.py did not produce dist/labels.pdf")
 
+        if args.dry_run:
+            print(f"✓ Dry run: rendered {pdf_path} ({num_active} active labels) "
+                  f"— Drive + release_history skipped")
+            return 0
+
+        folder_id = os.environ["LULLY_DRIVE_FOLDER_ID"]
         stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
         pdf = _upload_to_drive(token, folder_id, f"lully-labels-{stamp}.pdf",
                                pdf_path.read_bytes(), "application/pdf")
@@ -178,6 +199,8 @@ def main() -> int:
 
     except Exception as e:  # noqa: BLE001 — we want to log every failure
         traceback.print_exc()
+        if args.dry_run:
+            return 1
         try:
             _append_history_row(token, sheet_id, [
                 started_at,
