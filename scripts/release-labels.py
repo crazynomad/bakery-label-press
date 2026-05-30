@@ -67,7 +67,19 @@ def _refresh_access_token() -> str:
         },
         timeout=30,
     )
-    r.raise_for_status()
+    if not r.ok:
+        # Google returns a JSON body like {"error": "invalid_grant", ...} that
+        # pinpoints the cause. raise_for_status() drops it, so surface it first.
+        # invalid_grant almost always means the refresh token expired or was
+        # revoked — re-mint it with scripts/oauth-setup.py (see docs/sheet-setup.md).
+        try:
+            err = r.json()
+            detail = f"{err.get('error')}: {err.get('error_description', '')}".strip(": ")
+        except ValueError:
+            detail = r.text[:300]
+        raise RuntimeError(
+            f"OAuth token refresh failed ({r.status_code}): {detail}"
+        )
     return r.json()["access_token"]
 
 

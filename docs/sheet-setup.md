@@ -64,8 +64,12 @@ refresh token once and store it as a GitHub secret.
    - **Google Sheets API**
    - **Google Drive API**
 3. **APIs & Services → OAuth consent screen** → *External*, add your
-   Google account as a *test user*. (Don't bother with verification —
-   in-test mode works indefinitely for self-use.)
+   Google account as a *test user*, then **Publish App** to move it from
+   *Testing* to *In production*. ⚠️ This step is not optional: while the app
+   is in *Testing*, Google **expires refresh tokens after 7 days**, which
+   silently breaks the pipeline every week. Publishing removes that expiry.
+   (You can ignore Google's verification prompt — for self-use the app stays
+   usable in the unverified "production" state indefinitely.)
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID**
    → application type **Desktop app** → save the client ID + client secret.
 
@@ -94,8 +98,12 @@ A browser tab opens, you log in, the script prints three values.
 
 > The refresh token will keep working as long as you don't revoke the OAuth
 > grant in [your Google account permissions](https://myaccount.google.com/permissions)
-> or change the OAuth client's scopes. If it ever stops working, re-run
-> step 2.
+> or change the OAuth client's scopes — **provided the OAuth app is Published
+> ("In production"), not in Testing** (see step 1). A Testing-mode app expires
+> its refresh token after 7 days, so the GitHub Action will start failing with
+> `OAuth token refresh failed (400): invalid_grant` roughly a week after each
+> mint. If it ever stops working, check the consent-screen publishing status,
+> then re-run step 2 to mint a fresh token.
 
 ## Daily use
 
